@@ -21,7 +21,11 @@ namespace Lun.Server
             // Start database manager
             DatabaseManager = new MySQLContext();
             DatabaseManager.Run();
-            Console.WriteLine("Database started!");
+            Console.WriteLine("Database manager started!");            
+
+            // Start class data
+            ClassService.Initialize();
+            Console.WriteLine("Classes loaded!");
             Console.WriteLine("");
 
             // Start network device

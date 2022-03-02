@@ -5,30 +5,38 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lun.Client.Scenes.Logged
+namespace Lun.Client.Scenes.CreateCharacter
 {
-    class LoggedScene : SceneBase
+    internal class CreateCharacterScene : SceneBase
     {
         Texture Background;
 
-        PanelLogged panelLogged;
+        int currentSlot = 0;
+
+        PanelCreate panelCreate;
+
+        public CreateCharacterScene(int currentSlot) : base()
+        {
+            this.currentSlot = currentSlot;
+        }
 
         public override void UnloadContent()
         {
-            base.UnloadContent();
             Background.Destroy();
+            base.UnloadContent();
         }
 
         public override void LoadContent()
         {
-            Background = new Texture("res/ui/background-title.png", true) { Smooth = true };
+            Background = new Texture("res/ui/background-createchar.jpg", true) { Smooth = true };
 
-            panelLogged = new PanelLogged(this);
+            panelCreate = new PanelCreate(this);
         }
 
         public override void Draw()
         {
             DrawTexture(Background, new Rectangle(Vector2.Zero, Game.WindowSize));
+
             base.Draw();
         }
     }

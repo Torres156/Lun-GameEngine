@@ -1,0 +1,10 @@
+{
+  "Name": "Warrior",
+  "Description": "Good for melee battles, your focus is pure physical strenght.",
+  "MaleSprite": [
+    1
+  ],
+  "FemaleSprite": [
+    2
+  ]
+}
