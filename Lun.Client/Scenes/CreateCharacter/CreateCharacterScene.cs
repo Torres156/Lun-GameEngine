@@ -10,10 +10,9 @@ namespace Lun.Client.Scenes.CreateCharacter
     internal class CreateCharacterScene : SceneBase
     {
         Texture Background;
-
-        int currentSlot = 0;
-
         PanelCreate panelCreate;
+
+        int currentSlot { get; }
 
         public CreateCharacterScene(int currentSlot) : base()
         {
@@ -30,7 +29,7 @@ namespace Lun.Client.Scenes.CreateCharacter
         {
             Background = new Texture("res/ui/background-createchar.jpg", true) { Smooth = true };
 
-            panelCreate = new PanelCreate(this);
+            panelCreate = new PanelCreate(this, currentSlot);
         }
 
         public override void Draw()

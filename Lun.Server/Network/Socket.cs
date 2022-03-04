@@ -37,9 +37,7 @@ namespace Lun.Server.Network
             var accountFound = PlayerService.Accounts.Find(i => i.Peer == peer);
             if (accountFound != null)
             {
-                DatabaseManager.Accounts.Update(accountFound);
-                DatabaseManager.SaveChanges();
-
+                
                 PlayerService.Accounts.Remove(accountFound);
             }
 

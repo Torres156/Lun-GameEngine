@@ -1,9 +1,7 @@
 ﻿global using static Lun.Server.Services.DatabaseService;
 
 using Lun.Server.Core;
-using Lun.Server.Models.Data;
 using Lun.Server.Services;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading;
 
@@ -19,8 +17,7 @@ namespace Lun.Server
             Console.WriteLine("");
 
             // Start database manager
-            DatabaseManager = new MySQLContext();
-            DatabaseManager.Run();
+            DatabaseService.Initialize();
             Console.WriteLine("Database manager started!");            
 
             // Start class data
@@ -38,6 +35,8 @@ namespace Lun.Server
             threadServer.Start();
 
             ConsoleCore.Core();
+
+            DatabaseService.Close();
         }
     }
 }

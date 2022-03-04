@@ -16,6 +16,7 @@ namespace Lun.Server.Network
         {
             Register,
             Login,
+            CreateCharacter,
         }
 
         public static void Handle(NetPeer peer, NetDataReader buffer)
@@ -26,7 +27,38 @@ namespace Lun.Server.Network
             {
                 case Packet.Register: Register(peer, buffer); break;
                 case Packet.Login: Login(peer, buffer); break;
+                case Packet.CreateCharacter: CreateCharacter(peer, buffer); break;
             }
+        }
+
+        static void CreateCharacter(NetPeer peer, NetDataReader buffer)
+        {
+            var slotID = buffer.GetInt();
+            var name = buffer.GetString();
+            var classID = buffer.GetInt();
+            var spriteID = buffer.GetInt();
+
+
+            // Check if name is using
+            if (CheckDataExists(TABLE_CHARACTERS, "name", name))
+            {
+                Sender.Alert(peer, $"{name} is already in use!");
+                return;
+            }
+            
+            var account = PlayerService.Accounts.FirstOrDefault(i => i.Peer == peer);
+            if (account == null)
+            {
+                // DEBUG
+                return;
+            }
+
+            ExecuteNonQuery($@"INSERT INTO {TABLE_CHARACTERS} 
+(accountid, name, classid, spriteid) VALUES
+({account.ID},'{name}', {classID}, {spriteID});");
+            
+            Sender.Logged(account);
+            Sender.Alert(peer, $"The character {name} has been created!");
         }
 
         static void Login(NetPeer peer, NetDataReader buffer)
@@ -35,7 +67,7 @@ namespace Lun.Server.Network
             var pwd = buffer.GetString();
 
             // Verify the username is used
-            if (!DatabaseManager.Accounts.Any(i => i.Name == user))
+            if (!CheckDataExists(TABLE_ACCOUNTS, "name", user))
             {
                 Sender.Alert(peer, $"{user} is not exist!");
                 return;
@@ -50,18 +82,29 @@ namespace Lun.Server.Network
                 return;
             }
 
-            var accountData = DatabaseManager.Accounts.First(i => i.Name.Equals(user, StringComparison.OrdinalIgnoreCase));
+            var reader = ExecuteReader($"SELECT * FROM {TABLE_ACCOUNTS} WHERE name='{user}';");
+            reader.Read();
+            var accountID = reader.GetInt32(0);
+            var accountName = reader.GetString(1);
+            var accountPassword = reader.GetString(2);
+            reader.Close();
             
             // Check if passwords match
-            if (pwd != accountData.Password)
+            if (pwd != accountPassword)
             {
                 Sender.Alert(peer, "Incorrect password!");
                 return;
             }
 
-            accountData.Peer = peer;
-            PlayerService.Accounts.Add(accountData);
-            Sender.Logged(accountData);
+            var account = new Account();
+            account.ID = accountID;
+            account.Peer = peer;
+            account.Name = accountName;
+            account.Password = accountPassword;
+            PlayerService.Accounts.Add(account);
+
+            Sender.AllClassData(peer);
+            Sender.Logged(account);
         }
 
         static void Register(NetPeer peer, NetDataReader buffer)
@@ -70,7 +113,7 @@ namespace Lun.Server.Network
             var pwd = buffer.GetString();
 
             // Verify the username is used
-            if (DatabaseManager.Accounts.Any(i => i.Name.Equals(user, StringComparison.OrdinalIgnoreCase)))
+            if (CheckDataExists(TABLE_ACCOUNTS,"name", user))
             {
                 Sender.Alert(peer, $"{user} is already in use!");
                 return;
@@ -79,8 +122,10 @@ namespace Lun.Server.Network
             var account = new Account();
             account.Name = user;
             account.Password = pwd;
-            DatabaseManager.Accounts.Add(account);
-            DatabaseManager.SaveChanges();
+
+            ExecuteNonQuery(@$"INSERT INTO {TABLE_ACCOUNTS} 
+(name, password) VALUES
+('{user}', '{pwd}');");
 
             Sender.Alert(peer, $"The {user} account has been created!");
         }

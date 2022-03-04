@@ -10,6 +10,7 @@ namespace Lun.Server.Services
     class PlayerService
     {
         public static List<Account> Accounts = new List<Account>();
+        public static List<Character> Characters = new List<Character>();   
 
 
     }

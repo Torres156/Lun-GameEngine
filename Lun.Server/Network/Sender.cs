@@ -2,6 +2,8 @@
 using LiteNetLib.Utils;
 using Lun.Server.Models.Player;
 using Lun.Server.Network.Interfaces;
+using Lun.Server.Services;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +18,16 @@ namespace Lun.Server.Network
         {
             Alert,
             Logged,
+            AllClassData,
+        }
+
+        public static void AllClassData(NetPeer peer)
+        {
+            var json = JsonConvert.SerializeObject(ClassService.Items.ToArray());
+
+            var buffer = Create(Packet.AllClassData);
+            buffer.Put(json);
+            SendTo(peer, buffer);
         }
 
         public static void Logged(Account account)

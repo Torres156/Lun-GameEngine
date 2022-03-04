@@ -1,4 +1,5 @@
-﻿using Lun.Controls;
+﻿using Lun.Client.Services;
+using Lun.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace Lun.Client.Scenes.Logged
             Background = new Texture("res/ui/background-title.png", true) { Smooth = true };
 
             panelLogged = new PanelLogged(this);
+
+            ResourceService.LoadSprites();
         }
 
         public override void Draw()

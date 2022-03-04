@@ -12,14 +12,13 @@ namespace Lun.Server.Models.Player
 {
     class Account : INetPeer
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
         public string Name { get; set; }
         public string Password { get; set; }
 
-        [NotMapped]
+
         public NetPeer Peer { get; set; }
+
 
         public Account()
         { }

@@ -2,9 +2,9 @@
   "Name": "Warrior",
   "Description": "Good for melee battles, your focus is pure physical strenght.",
   "MaleSprite": [
-    1
+    1,2
   ],
   "FemaleSprite": [
-    2
+    3,4
   ]
 }
