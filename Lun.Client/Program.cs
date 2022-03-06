@@ -1,4 +1,8 @@
 ﻿global using static Lun.LunEngine;
+global using Lun.Shared;
+global using Lun.Shared.Extends;
+
+
 using Lun.Client.Scenes.Menu;
 using System;
 
@@ -8,9 +12,9 @@ namespace Lun.Client
     {
         static void Main(string[] args)
         {
-            Game.WindowSizeMin = new Vector2(800, 600);
-            Game.WindowSize = new Vector2(1024, 600);
-            Game.WindowTitle = "Lun Engine";
+            Game.WindowSizeMin   = new Vector2(800, 600);
+            Game.WindowSize      = new Vector2(1024, 600);
+            Game.WindowTitle     = "Lun Engine";
             Game.WindowCanResize = true;
 
             LoadFont("res/Rene Bieder  Milliard Medium.otf");

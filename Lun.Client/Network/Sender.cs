@@ -15,6 +15,14 @@ namespace Lun.Client.Network
             Register,
             Login,
             CreateCharacter,
+            UseCharacter,
+        }
+
+        public static void UseCharacter(int slotID)
+        {
+            var buffer = Create(Packet.UseCharacter);
+            buffer.Put(slotID);
+            SendTo(buffer);
         }
 
         public static void CreateCharacter(int slotID, string name, int classID, int spriteID)

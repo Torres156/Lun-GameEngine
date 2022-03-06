@@ -53,6 +53,7 @@ PRIMARY KEY (id)
             ExecuteNonQuery($@"CREATE TABLE IF NOT EXISTS {TABLE_CHARACTERS}(
 id int NOT NULL AUTO_INCREMENT,
 accountid int NOT NULL,
+slotid int NOT NULL,
 name text,
 classid int,
 spriteid int,

@@ -17,6 +17,7 @@ namespace Lun.Server.Network
             Register,
             Login,
             CreateCharacter,
+            UseCharacter,
         }
 
         public static void Handle(NetPeer peer, NetDataReader buffer)
@@ -25,17 +26,43 @@ namespace Lun.Server.Network
 
             switch(packetID)
             {
-                case Packet.Register: Register(peer, buffer); break;
-                case Packet.Login: Login(peer, buffer); break;
+                case Packet.Register       : Register(peer, buffer); break;
+                case Packet.Login          : Login(peer, buffer); break;
                 case Packet.CreateCharacter: CreateCharacter(peer, buffer); break;
+                case Packet.UseCharacter   : UseCharacter(peer, buffer); break;
             }
+        }
+
+        static void UseCharacter(NetPeer peer, NetDataReader buffer)
+        {
+            var slotid = buffer.GetInt();
+
+            var account   = PlayerService.Accounts.Find(i => i.Peer == peer);
+            var character = new Character();
+
+            var reader = ExecuteReader($"SELECT * FROM {TABLE_CHARACTERS} WHERE accountid={account.ID} AND slotid={slotid}");
+            if (reader.Read())
+            {
+                character.AccountID       = account.ID;
+                character.CharacterSlotID = slotid;
+                character.ID              = reader.GetInt32("id");
+                character.Name            = reader.GetString("name");
+                character.ClassID         = reader.GetInt32("classid");
+                character.SpriteID        = reader.GetInt32("spriteid");
+                character.Position        = new Vector2( reader.GetFloat("x"), reader.GetFloat("y"));
+            }
+            reader.Close();
+
+            character.Peer = peer;
+            PlayerService.Characters.Add(character);
+            PlayerService.JoinGame(character);
         }
 
         static void CreateCharacter(NetPeer peer, NetDataReader buffer)
         {
-            var slotID = buffer.GetInt();
-            var name = buffer.GetString();
-            var classID = buffer.GetInt();
+            var slotID   = buffer.GetInt();
+            var name     = buffer.GetString();
+            var classID  = buffer.GetInt();
             var spriteID = buffer.GetInt();
 
 
@@ -54,9 +81,10 @@ namespace Lun.Server.Network
             }
 
             ExecuteNonQuery($@"INSERT INTO {TABLE_CHARACTERS} 
-(accountid, name, classid, spriteid) VALUES
-({account.ID},'{name}', {classID}, {spriteID});");
-            
+(accountid, slotid, name, classid, spriteid, x, y) VALUES
+({account.ID}, {slotID},'{name}', {classID}, {spriteID}, 0, 0);");
+
+            Sender.AllCharacterAccount(account);
             Sender.Logged(account);
             Sender.Alert(peer, $"The character {name} has been created!");
         }
@@ -64,7 +92,7 @@ namespace Lun.Server.Network
         static void Login(NetPeer peer, NetDataReader buffer)
         {
             var user = buffer.GetString();
-            var pwd = buffer.GetString();
+            var pwd  = buffer.GetString();
 
             // Verify the username is used
             if (!CheckDataExists(TABLE_ACCOUNTS, "name", user))
@@ -84,8 +112,8 @@ namespace Lun.Server.Network
 
             var reader = ExecuteReader($"SELECT * FROM {TABLE_ACCOUNTS} WHERE name='{user}';");
             reader.Read();
-            var accountID = reader.GetInt32(0);
-            var accountName = reader.GetString(1);
+            var accountID       = reader.GetInt32(0);
+            var accountName     = reader.GetString(1);
             var accountPassword = reader.GetString(2);
             reader.Close();
             
@@ -96,14 +124,16 @@ namespace Lun.Server.Network
                 return;
             }
 
+            // Load account data
             var account = new Account();
-            account.ID = accountID;
-            account.Peer = peer;
-            account.Name = accountName;
+            account.ID       = accountID;
+            account.Peer     = peer;
+            account.Name     = accountName;
             account.Password = accountPassword;
             PlayerService.Accounts.Add(account);
 
             Sender.AllClassData(peer);
+            Sender.AllCharacterAccount(account);
             Sender.Logged(account);
         }
 
@@ -120,7 +150,7 @@ namespace Lun.Server.Network
             }
 
             var account = new Account();
-            account.Name = user;
+            account.Name     = user;
             account.Password = pwd;
 
             ExecuteNonQuery(@$"INSERT INTO {TABLE_ACCOUNTS} 

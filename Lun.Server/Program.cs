@@ -1,4 +1,6 @@
 ﻿global using static Lun.Server.Services.DatabaseService;
+global using Lun.Shared;
+global using Lun.Shared.Extends;
 
 using Lun.Server.Core;
 using Lun.Server.Services;

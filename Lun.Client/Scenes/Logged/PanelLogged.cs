@@ -1,5 +1,6 @@
 ﻿using Lun.Client.Scenes.CreateCharacter;
 using Lun.Client.Scenes.Menu;
+using Lun.Client.Services;
 using Lun.Controls;
 using System;
 using System.Collections.Generic;
@@ -19,52 +20,55 @@ namespace Lun.Client.Scenes.Logged
 
         public PanelLogged(Bond bond) : base(bond)
         {
-            Anchor = Anchors.Center;
-            Size = new Vector2(400, 300);
-            FillColor = new Color(0, 0, 0, 200);
+            Anchor           = Anchors.Center;
+            Size             = new Vector2(400, 300);
+            FillColor        = new Color(0, 0, 0, 200);
             OutlineThickness = 0;
 
             btnBack = new Button(this)
             {
-                Anchor = Anchors.TopRight,
-                Size = new Vector2(20),
-                Position = new Vector2(5),
-                Text = "X",
-                FillColor = Color.Transparent,
-                FillColor_Hover = new Color(30, 30, 30),
-                FillColor_Press = Color.Transparent,
+                Anchor           = Anchors.TopRight,
+                Size             = new Vector2(20),
+                Position         = new Vector2(5),
+                Text             = "X",
+                FillColor        = Color.Transparent,
+                FillColor_Hover  = new Color(30, 30, 30),
+                FillColor_Press  = Color.Transparent,
                 OutlineThickness = 0,
             };
             btnBack.OnMouseReleased += BtnBack_OnMouseReleased;
 
             btnCreateOrUse = new Button(this)
             {
-                Text = "Create",
-                Size = new Vector2(100,25),
-                Anchor = Anchors.BottomCenter,
-                Position = new Vector2(-55,10),
+                Text     = PlayerService.CharacterName_Slot[selectSlot].Length > 0 ? "Use" : "Create",
+                Size     = new Vector2(100, 25),
+                Anchor   = Anchors.BottomCenter,
+                Position = new Vector2(-55, 10),
             };
             btnCreateOrUse.OnMouseReleased += BtnCreateOrUse_OnMouseReleased;
 
             btnDelete = new Button(this)
             {
-                Text = "Deletar",
-                Size = new Vector2(100, 25),
-                Anchor = Anchors.BottomCenter,
-                Position = new Vector2(55, 10),
-                FillColor = new Color(190, 89, 89),
+                Text            = "Delete",
+                Size            = new Vector2(100, 25),
+                Anchor          = Anchors.BottomCenter,
+                Position        = new Vector2(55, 10),
+                FillColor       = new Color(190, 89, 89),
                 FillColor_Hover = new Color(225, 113, 113),
                 FillColor_Press = new Color(144, 86, 86),
             };
 
-            OnDraw += PanelLogged_OnDraw;
-            OnMouseMove += PanelLogged_OnMouseMove;
+            OnDraw          += PanelLogged_OnDraw;
+            OnMouseMove     += PanelLogged_OnMouseMove;
             OnMouseReleased += PanelLogged_OnMouseReleased;
         }
 
         private void BtnCreateOrUse_OnMouseReleased(ControlBase sender, MouseButtonEventArgs e)
         {
-            Game.SetScene<CreateCharacterScene>(selectSlot);
+            if (PlayerService.CharacterName_Slot[selectSlot].Length == 0)
+                Game.SetScene<CreateCharacterScene>(selectSlot);
+            else
+                Network.Sender.UseCharacter(selectSlot);
         }
 
         private void PanelLogged_OnMouseReleased(ControlBase sender, MouseButtonEventArgs e)
@@ -72,13 +76,14 @@ namespace Lun.Client.Scenes.Logged
             if (hoverSlot > -1)
             {
                 selectSlot = hoverSlot;
+                btnCreateOrUse.Text = PlayerService.CharacterName_Slot[selectSlot].Length > 0 ? "Use" : "Create";
                 return;
             }
         }
 
         private void PanelLogged_OnMouseMove(ControlBase sender, Vector2 e)
         {
-            var gp = GlobalPosition();
+            var gp       = GlobalPosition();
             var rec_size = new Vector2(Size.x - 20, 30);
 
             hoverSlot = -1;
@@ -104,8 +109,8 @@ namespace Lun.Client.Scenes.Logged
 
             for (int i = 0; i < 5; i++)
             {
-                var c1 = new Color(30, 30, 30);
-                var c2 = new Color(50, 50, 50);
+                var c1        = new Color(30, 30, 30);
+                var c2        = new Color(50, 50, 50);
                 var colorText = new Color(200, 200, 200);
 
                 // Hover Style
@@ -128,6 +133,8 @@ namespace Lun.Client.Scenes.Logged
                 DrawRectangle(rec_pos, rec_size, c1, 2, c2);
 
                 var text = "Empty Slot";
+                if (PlayerService.CharacterName_Slot[i].Length > 0)
+                    text = PlayerService.CharacterName_Slot[i];
                 DrawText(text, 13, rec_pos + new Vector2((rec_size.x - GetTextWidth(text, 13)) / 2, (rec_size.y - GetTextHeight(text, 13)) / 2), colorText);
             }
         }

@@ -19,7 +19,45 @@ namespace Lun.Server.Network
             Alert,
             Logged,
             AllClassData,
+            AllCharacterAccount,
+            MyCharacterData,
+            ChangeToGameplay,
         }
+
+        public static void ChangeToGameplay(INetPeer peer)
+            => SendTo(peer, Create(Packet.ChangeToGameplay));
+
+        public static void MyCharacterData(Character player)
+        {
+            var buffer = Create(Packet.MyCharacterData);
+
+            buffer.Put(player.Name);
+            buffer.Put(player.SpriteID);
+            buffer.Put(player.Position);
+
+            SendTo(player, buffer);
+        }
+
+        public static void AllCharacterAccount(Account account)
+        {
+            var buffer = Create(Packet.AllCharacterAccount);
+
+            var count = Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM {TABLE_CHARACTERS} WHERE accountid='{account.ID}';"));
+            buffer.Put(count);
+
+            if (count > 0)
+            {
+                var reader = ExecuteReader($"SELECT slotid, name FROM {TABLE_CHARACTERS} WHERE accountid='{account.ID}';");
+                while (reader.Read())
+                {
+                    buffer.Put(reader.GetInt32(0));
+                    buffer.Put(reader.GetString(1));
+                }
+                reader.Close();
+            }
+            SendTo(account, buffer);
+        }
+
 
         public static void AllClassData(NetPeer peer)
         {

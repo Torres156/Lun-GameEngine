@@ -10,7 +10,7 @@ namespace Lun.Server.Network
 {
     class Socket
     {
-        public const int PORT = 4000;
+        public const int PORT            = 4000;
         public const int MAX_CONNECTIONS = 100;
 
         static EventBasedNetListener listener;
@@ -21,13 +21,13 @@ namespace Lun.Server.Network
             listener = new EventBasedNetListener();
 
             Device = new NetManager(listener);
-            Device.AutoRecycle = true;            
+            Device.AutoRecycle = true;
             Device.Start(PORT);
 
             listener.ConnectionRequestEvent += Listener_ConnectionRequestEvent;
-            listener.NetworkReceiveEvent += Listener_NetworkReceiveEvent;
-            listener.PeerConnectedEvent += Listener_PeerConnectedEvent;
-            listener.PeerDisconnectedEvent += Listener_PeerDisconnectedEvent;
+            listener.NetworkReceiveEvent    += Listener_NetworkReceiveEvent;
+            listener.PeerConnectedEvent     += Listener_PeerConnectedEvent;
+            listener.PeerDisconnectedEvent  += Listener_PeerDisconnectedEvent;
         }
 
         private static void Listener_PeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
@@ -35,10 +35,16 @@ namespace Lun.Server.Network
             Console.WriteLine($"Connection entry <{peer.EndPoint.ToString()}> has been disconnected!");
 
             var accountFound = PlayerService.Accounts.Find(i => i.Peer == peer);
-            if (accountFound != null)
-            {
-                
+            if (accountFound != null)            
                 PlayerService.Accounts.Remove(accountFound);
+
+            var playerFound = PlayerService.Characters.Find(i => i.Peer == peer);
+            if (playerFound != null)
+            {
+                // REMOVE FROM MAP
+
+                playerFound.Save();
+                PlayerService.Characters.Remove(playerFound);
             }
 
         }
@@ -61,7 +67,7 @@ namespace Lun.Server.Network
                 request.Reject();
         }
 
-        public static void Pool() 
+        public static void Pool()
         {
             Device.PollEvents();
         }

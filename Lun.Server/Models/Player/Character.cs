@@ -1,5 +1,6 @@
 ﻿using LiteNetLib;
 using Lun.Server.Network.Interfaces;
+using Lun.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,15 +11,24 @@ using System.Threading.Tasks;
 
 namespace Lun.Server.Models.Player
 {
-    internal class Character : INetPeer
+    internal class Character : CharacterModel, INetPeer
     {
-        public int AccountID { get; set; }
-        public string Name { get; set; }
-        public int ClassID { get; set; }
-        public int SpriteID { get; set; }
-        public Vector2 Position { get; set; }
+        public int ID              { get; set; }
+        public int AccountID       { get; set; }
+        public int CharacterSlotID { get; set; }
 
+        public NetPeer Peer { get; set; } 
 
-        public NetPeer Peer { get; set; }
+        public void Save()
+        {
+            ExecuteNonQuery(@$"UPDATE {TABLE_CHARACTERS} SET
+name='{Name}',
+classid={ClassID},
+spriteid={SpriteID},
+x={Position.x},
+y={Position.y}
+WHERE id={ID};
+");
+        }
     }
 }
