@@ -4,6 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
 	  <LangVersion>preview</LangVersion>
+	  <Nullable>disable</Nullable>
+	  <BaseOutputPath>..\Build\Lun.Server\</BaseOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

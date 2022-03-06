@@ -41,7 +41,7 @@ namespace Lun.Server.Network
             var playerFound = PlayerService.Characters.Find(i => i.Peer == peer);
             if (playerFound != null)
             {
-                // REMOVE FROM MAP
+                Sender.PlayerRemove(playerFound);
 
                 playerFound.Save();
                 PlayerService.Characters.Remove(playerFound);

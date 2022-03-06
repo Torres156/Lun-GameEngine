@@ -6,6 +6,7 @@ using Lun.Server.Core;
 using Lun.Server.Services;
 using System;
 using System.Threading;
+using System.Globalization;
 
 namespace Lun.Server
 {
@@ -14,6 +15,10 @@ namespace Lun.Server
 
         static void Main(string[] args)
         {
+            var culture = (CultureInfo) Thread.CurrentThread.CurrentCulture.Clone();
+            culture.NumberFormat.NumberDecimalSeparator = "."; // Float separator
+            Thread.CurrentThread.CurrentCulture = culture;
+
             Console.Title = "Lun server";
             Console.WriteLine("Starting server!");
             Console.WriteLine("");

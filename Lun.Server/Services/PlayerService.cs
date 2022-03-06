@@ -19,6 +19,31 @@ namespace Lun.Server.Services
 
             // Sending change to GameplayScene
             Network.Sender.ChangeToGameplay(player);
+
+            // Warp to map
+            Warp(player, player.MapID, player.Position, true);
+        }
+
+        public static void Warp(Character player, int mapID, Vector2 position, bool isEnterGame = false)
+        {
+            player.Position = position;
+
+            if (isEnterGame)
+            {
+                if (player.MapID == mapID)
+                { } // UDPATE POSITION
+                else
+                    Network.Sender.PlayerRemove(player); // REMOVE PLAYER FROM OTHER MAP                
+            }
+
+            player.MapID = mapID;
+            Network.Sender.CheckMap(player);
+        }
+
+        public static void SendWarpInfo(Character player)
+        {
+            Network.Sender.PlayerDataMeToMap(player);
+            Network.Sender.PlayerDataAllToMe(player);
         }
     }
 }

@@ -57,6 +57,8 @@ slotid int NOT NULL,
 name text,
 classid int,
 spriteid int,
+dir int,
+mapid int,
 x float,
 y float,
 PRIMARY KEY (id),
@@ -99,7 +101,7 @@ FOREIGN KEY (accountid) REFERENCES accounts(id)
 
         public static bool CheckDataExists(string table, string whereEntry, string whereValue)
         {
-            var value = Convert.ToInt32(ExecuteScalar($"SELECT COUNT(*) FROM {table} WHERE BINARY {whereEntry}='{whereValue}';"));
+            var value = Convert.ToInt32(ExecuteScalar($"SELECT EXISTS(SELECT 1 FROM {table} WHERE {whereEntry}='{whereValue}');"));
             return value > 0;
 
         }

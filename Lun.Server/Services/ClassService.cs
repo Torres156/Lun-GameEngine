@@ -1,4 +1,5 @@
 ﻿using Lun.Server.Models.Player;
+using Lun.Shared.Models.Player;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,14 +12,14 @@ namespace Lun.Server.Services
 {
     internal static class ClassService
     {
-        public static List<ClassData> Items;
+        public static List<ClassModel> Items;
 
         /// <summary>
         /// Initialize Class Data
         /// </summary>
         public static void Initialize()
         {
-            Items = new List<ClassData>();
+            Items = new List<ClassModel>();
 
             var path = "data/classes/";
 
@@ -30,11 +31,11 @@ namespace Lun.Server.Services
             if (Directory.GetFiles(path).Length == 0)
             {
                 // Create default class data
-                Items.Add(new ClassData
+                Items.Add(new ClassModel
                 {
-                    Name = "Warrior",
-                    Description = "Good for melee battles, your focus is pure physical strenght.",
-                    MaleSprite = new[] { 1 },
+                    Name         = "Warrior",
+                    Description  = "Good for melee battles, your focus is pure physical strenght.",
+                    MaleSprite   = new[] { 1 },
                     FemaleSprite = new[] { 2 },
                 });
 
@@ -49,7 +50,7 @@ namespace Lun.Server.Services
                 while(File.Exists(path + $"{i}.json"))
                 {
                     var json = File.ReadAllText(path + $"{i}.json");
-                    var data = JsonConvert.DeserializeObject<ClassData>(json);
+                    var data = JsonConvert.DeserializeObject<ClassModel>(json);
                     Items.Add(data);
                     i++;
                 }

@@ -15,7 +15,7 @@ namespace Lun.Client
             Game.WindowSizeMin   = new Vector2(800, 600);
             Game.WindowSize      = new Vector2(1024, 600);
             Game.WindowTitle     = "Lun Engine";
-            Game.WindowCanResize = true;
+            Game.WindowCanResize = true;            
 
             LoadFont("res/Rene Bieder  Milliard Medium.otf");
             Network.Socket.Initialize();

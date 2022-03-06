@@ -2,6 +2,7 @@
 using LiteNetLib.Utils;
 using Lun.Server.Models.Player;
 using Lun.Server.Services;
+using Lun.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,24 +13,40 @@ namespace Lun.Server.Network
 {
     class Receive
     {
-        enum Packet
-        {
-            Register,
-            Login,
-            CreateCharacter,
-            UseCharacter,
-        }
-
         public static void Handle(NetPeer peer, NetDataReader buffer)
         {
-            var packetID = (Packet) buffer.GetInt();
+            var packetID = (PacketClient) buffer.GetInt();
 
             switch(packetID)
             {
-                case Packet.Register       : Register(peer, buffer); break;
-                case Packet.Login          : Login(peer, buffer); break;
-                case Packet.CreateCharacter: CreateCharacter(peer, buffer); break;
-                case Packet.UseCharacter   : UseCharacter(peer, buffer); break;
+                case PacketClient.Register       : Register(peer, buffer); break;
+                case PacketClient.Login          : Login(peer, buffer); break;
+                case PacketClient.CreateCharacter: CreateCharacter(peer, buffer); break;
+                case PacketClient.UseCharacter   : UseCharacter(peer, buffer); break;
+                case PacketClient.MapAnswer      : MapAnswer(peer, buffer); break;
+                case PacketClient.PlayerMovement : PlayerMovement(peer, buffer); break;
+            }
+        }
+
+        static void PlayerMovement(NetPeer peer, NetDataReader buffer)
+        {
+            var player = PlayerService.Characters.Find(i => i.Peer == peer);
+
+            player.Direction = (Directions)buffer.GetInt();
+            player.Position  = buffer.GetVector2();
+
+            Sender.PlayerMovement(player);
+        }
+
+        static void MapAnswer(NetPeer peer, NetDataReader buffer)
+        {
+            var value = buffer.GetBool();
+
+            if (value)
+            { } // SEND MAP DATA
+            else
+            {
+                PlayerService.SendWarpInfo(PlayerService.Characters.Find(i => i.Peer == peer));
             }
         }
 
@@ -80,9 +97,9 @@ namespace Lun.Server.Network
                 return;
             }
 
-            ExecuteNonQuery($@"INSERT INTO {TABLE_CHARACTERS} 
-(accountid, slotid, name, classid, spriteid, x, y) VALUES
-({account.ID}, {slotID},'{name}', {classID}, {spriteID}, 0, 0);");
+            ExecuteNonQuery($@"INSERT INTO { TABLE_CHARACTERS } 
+            ( accountid, slotid, name, classid, spriteid, x, y ) VALUES
+            ({ account.ID }, { slotID }, '{name}', {classID}, { spriteID }, 320, 320); ");
 
             Sender.AllCharacterAccount(account);
             Sender.Logged(account);
@@ -112,9 +129,9 @@ namespace Lun.Server.Network
 
             var reader = ExecuteReader($"SELECT * FROM {TABLE_ACCOUNTS} WHERE name='{user}';");
             reader.Read();
-            var accountID       = reader.GetInt32(0);
-            var accountName     = reader.GetString(1);
-            var accountPassword = reader.GetString(2);
+            var accountID       = reader.GetInt32("id");
+            var accountName     = reader.GetString("name");
+            var accountPassword = reader.GetString("password");
             reader.Close();
             
             // Check if passwords match
@@ -153,9 +170,9 @@ namespace Lun.Server.Network
             account.Name     = user;
             account.Password = pwd;
 
-            ExecuteNonQuery(@$"INSERT INTO {TABLE_ACCOUNTS} 
-(name, password) VALUES
-('{user}', '{pwd}');");
+            ExecuteNonQuery(@$"INSERT INTO { TABLE_ACCOUNTS } 
+            (name, password) VALUES
+            ('{ user }', '{ pwd }'); ");
 
             Sender.Alert(peer, $"The {user} account has been created!");
         }
